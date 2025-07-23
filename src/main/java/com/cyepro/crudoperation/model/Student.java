@@ -34,6 +34,7 @@ public class Student {
     private String className;
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    @com.fasterxml.jackson.annotation.JsonManagedReference
     private Set<StudentEnrollment> studentEnrollments = new HashSet<>();
 
     public enum Gender {

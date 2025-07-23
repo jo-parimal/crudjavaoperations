@@ -32,5 +32,7 @@ public class Teacher {
     private LocalDate hireDate;
 
     @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, orphanRemoval = true)
+    @com.fasterxml.jackson.annotation.JsonManagedReference
     private Set<ClassSubjectAssignment> classSubjectAssignments = new HashSet<>();
 }
+
