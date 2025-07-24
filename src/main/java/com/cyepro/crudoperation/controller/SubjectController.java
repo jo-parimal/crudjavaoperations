@@ -1,7 +1,8 @@
-package com.cyepro.crudoperation.controller; // Updated package
+package com.cyepro.crudoperation.controller;
 
-import com.cyepro.crudoperation.model.Subject; // Updated import
-import com.cyepro.crudoperation.service.SubjectService; // Updated import
+import com.cyepro.crudoperation.dto.SubjectDTO; // New import
+import com.cyepro.crudoperation.model.Subject;
+import com.cyepro.crudoperation.service.SubjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,33 +18,37 @@ public class SubjectController {
     private SubjectService subjectService;
 
     @PostMapping
-    public ResponseEntity<Subject> createSubject(@RequestBody Subject subject) {
+    public ResponseEntity<SubjectDTO> createSubject(@RequestBody Subject subject) {
         try {
-            Subject newSubject = subjectService.createSubject(subject);
-            return new ResponseEntity<>(newSubject, HttpStatus.CREATED);
+            // Service now returns DTO
+            SubjectDTO newSubjectDto = subjectService.createSubject(subject);
+            return new ResponseEntity<>(newSubjectDto, HttpStatus.CREATED);
         } catch (RuntimeException e) {
             return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
     @GetMapping
-    public ResponseEntity<List<Subject>> getAllSubjects() {
-        List<Subject> subjects = subjectService.getAllSubjects();
+    public ResponseEntity<List<SubjectDTO>> getAllSubjects() {
+        // Service now returns DTO list
+        List<SubjectDTO> subjects = subjectService.getAllSubjects();
         return ResponseEntity.ok(subjects);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Subject> getSubjectById(@PathVariable Long id) {
+    public ResponseEntity<SubjectDTO> getSubjectById(@PathVariable Long id) {
+        // Service now returns Optional<DTO>
         return subjectService.getSubjectById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Subject> updateSubject(@PathVariable Long id, @RequestBody Subject subjectDetails) {
+    public ResponseEntity<SubjectDTO> updateSubject(@PathVariable Long id, @RequestBody Subject subjectDetails) {
         try {
-            Subject updatedSubject = subjectService.updateSubject(id, subjectDetails);
-            return ResponseEntity.ok(updatedSubject);
+            // Service now returns DTO
+            SubjectDTO updatedSubjectDto = subjectService.updateSubject(id, subjectDetails);
+            return ResponseEntity.ok(updatedSubjectDto);
         } catch (RuntimeException e) {
             return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {

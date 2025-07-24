@@ -1,13 +1,15 @@
-package com.cyepro.crudoperation.service; // Updated package
+package com.cyepro.crudoperation.service;
 
-import com.cyepro.crudoperation.model.Student; // Updated import
-import com.cyepro.crudoperation.repository.StudentRepository; // Updated import
+import com.cyepro.crudoperation.dto.StudentDTO; // New import
+import com.cyepro.crudoperation.model.Student;
+import com.cyepro.crudoperation.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors; // New import
 
 @Service
 public class StudentService {
@@ -16,20 +18,25 @@ public class StudentService {
     private StudentRepository studentRepository;
 
     @Transactional
-    public Student createStudent(Student student) {
-        return studentRepository.save(student);
+    public StudentDTO createStudent(Student student) {
+        Student savedStudent = studentRepository.save(student);
+        // Convert to DTO before returning
+        return new StudentDTO(savedStudent);
     }
 
-    public List<Student> getAllStudents() {
-        return studentRepository.findAll();
+    public List<StudentDTO> getAllStudents() {
+        return studentRepository.findAll().stream()
+                .map(StudentDTO::new)
+                .collect(Collectors.toList());
     }
 
-    public Optional<Student> getStudentById(Long id) {
-        return studentRepository.findById(id);
+    public Optional<StudentDTO> getStudentById(Long id) {
+        return studentRepository.findById(id)
+                .map(StudentDTO::new);
     }
 
     @Transactional
-    public Student updateStudent(Long id, Student studentDetails) {
+    public StudentDTO updateStudent(Long id, Student studentDetails) {
         Student existingStudent = studentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Student not found with id: " + id));
 
@@ -37,7 +44,9 @@ public class StudentService {
         existingStudent.setDateOfBirth(studentDetails.getDateOfBirth());
         existingStudent.setGender(studentDetails.getGender());
         existingStudent.setClassName(studentDetails.getClassName());
-        return studentRepository.save(existingStudent);
+        Student updatedStudent = studentRepository.save(existingStudent);
+        // Convert to DTO before returning
+        return new StudentDTO(updatedStudent);
     }
 
     public void deleteStudent(Long id) {

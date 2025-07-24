@@ -1,7 +1,8 @@
 package com.cyepro.crudoperation.controller;
-import com.cyepro.crudoperation.model.Teacher; // Updated import
-import com.cyepro.crudoperation.service.TeacherService;
 
+import com.cyepro.crudoperation.dto.TeacherDTO; // New import
+import com.cyepro.crudoperation.model.Teacher;
+import com.cyepro.crudoperation.service.TeacherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,33 +17,37 @@ public class TeacherController {
     private TeacherService teacherService;
 
     @PostMapping
-    public ResponseEntity<Teacher> createTeacher(@RequestBody Teacher teacher) {
+    public ResponseEntity<TeacherDTO> createTeacher(@RequestBody Teacher teacher) {
         try {
-            Teacher newTeacher = teacherService.createTeacher(teacher);
-            return new ResponseEntity<>(newTeacher, HttpStatus.CREATED);
+            // Service now returns DTO
+            TeacherDTO newTeacherDto = teacherService.createTeacher(teacher);
+            return new ResponseEntity<>(newTeacherDto, HttpStatus.CREATED);
         } catch (RuntimeException e) {
             return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
     @GetMapping
-    public ResponseEntity<List<Teacher>> getAllTeachers() {
-        List<Teacher> teachers = teacherService.getAllTeachers();
+    public ResponseEntity<List<TeacherDTO>> getAllTeachers() {
+        // Service now returns DTO list
+        List<TeacherDTO> teachers = teacherService.getAllTeachers();
         return ResponseEntity.ok(teachers);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Teacher> getTeacherById(@PathVariable Long id) {
+    public ResponseEntity<TeacherDTO> getTeacherById(@PathVariable Long id) {
+        // Service now returns Optional<DTO>
         return teacherService.getTeacherById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Teacher> updateTeacher(@PathVariable Long id, @RequestBody Teacher teacherDetails) {
+    public ResponseEntity<TeacherDTO> updateTeacher(@PathVariable Long id, @RequestBody Teacher teacherDetails) {
         try {
-            Teacher updatedTeacher = teacherService.updateTeacher(id, teacherDetails);
-            return ResponseEntity.ok(updatedTeacher);
+            // Service now returns DTO
+            TeacherDTO updatedTeacherDto = teacherService.updateTeacher(id, teacherDetails);
+            return ResponseEntity.ok(updatedTeacherDto);
         } catch (RuntimeException e) {
             return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {

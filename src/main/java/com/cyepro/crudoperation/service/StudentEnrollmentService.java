@@ -1,12 +1,13 @@
-package com.cyepro.crudoperation.service; // Updated package
+package com.cyepro.crudoperation.service;
 
-import com.cyepro.crudoperation.model.Student; // Updated import
-import com.cyepro.crudoperation.model.StudentEnrollment; // Updated import
-import com.cyepro.crudoperation.model.Subject; // Updated import
-import com.cyepro.crudoperation.repository.StudentEnrollmentRepository; // Updated import
-import com.cyepro.crudoperation.repository.StudentRepository; // Updated import
-import com.cyepro.crudoperation.repository.SubjectRepository; // Updated import
-import com.cyepro.crudoperation.dto.StudentTeacherSubjectDTO; // Updated import
+import com.cyepro.crudoperation.model.Student;
+import com.cyepro.crudoperation.model.StudentEnrollment;
+import com.cyepro.crudoperation.model.Subject;
+import com.cyepro.crudoperation.repository.StudentEnrollmentRepository;
+import com.cyepro.crudoperation.repository.StudentRepository;
+import com.cyepro.crudoperation.repository.SubjectRepository;
+import com.cyepro.crudoperation.dto.StudentEnrollmentDTO; // New import
+import com.cyepro.crudoperation.dto.StudentTeacherSubjectDTO;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
@@ -33,7 +34,7 @@ public class StudentEnrollmentService {
     private EntityManager entityManager;
 
     @Transactional
-    public StudentEnrollment createEnrollment(Long studentId, Long subjectId, LocalDate enrollmentDate) {
+    public StudentEnrollmentDTO createEnrollment(Long studentId, Long subjectId, LocalDate enrollmentDate) {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found with id: " + studentId));
         Subject subject = subjectRepository.findById(subjectId)
@@ -47,19 +48,24 @@ public class StudentEnrollmentService {
         enrollment.setStudent(student);
         enrollment.setSubject(subject);
         enrollment.setEnrollmentDate(enrollmentDate != null ? enrollmentDate : LocalDate.now());
-        return enrollmentRepository.save(enrollment);
+        StudentEnrollment savedEnrollment = enrollmentRepository.save(enrollment);
+        // Convert to DTO before returning
+        return new StudentEnrollmentDTO(savedEnrollment);
     }
 
-    public List<StudentEnrollment> getAllEnrollments() {
-        return enrollmentRepository.findAll();
+    public List<StudentEnrollmentDTO> getAllEnrollments() {
+        return enrollmentRepository.findAll().stream()
+                .map(StudentEnrollmentDTO::new)
+                .collect(Collectors.toList());
     }
 
-    public Optional<StudentEnrollment> getEnrollmentById(Long id) {
-        return enrollmentRepository.findById(id);
+    public Optional<StudentEnrollmentDTO> getEnrollmentById(Long id) {
+        return enrollmentRepository.findById(id)
+                .map(StudentEnrollmentDTO::new);
     }
 
     @Transactional
-    public StudentEnrollment updateEnrollment(Long id, Long studentId, Long subjectId, LocalDate enrollmentDate) {
+    public StudentEnrollmentDTO updateEnrollment(Long id, Long studentId, Long subjectId, LocalDate enrollmentDate) {
         StudentEnrollment existingEnrollment = enrollmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Student Enrollment not found with id: " + id));
 
@@ -77,7 +83,9 @@ public class StudentEnrollmentService {
         existingEnrollment.setStudent(student);
         existingEnrollment.setSubject(subject);
         existingEnrollment.setEnrollmentDate(enrollmentDate != null ? enrollmentDate : LocalDate.now());
-        return enrollmentRepository.save(existingEnrollment);
+        StudentEnrollment updatedEnrollment = enrollmentRepository.save(existingEnrollment);
+        // Convert to DTO before returning
+        return new StudentEnrollmentDTO(updatedEnrollment);
     }
 
     public void deleteEnrollment(Long id) {

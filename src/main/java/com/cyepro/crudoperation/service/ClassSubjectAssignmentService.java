@@ -1,17 +1,19 @@
-package com.cyepro.crudoperation.service; // Updated package
+package com.cyepro.crudoperation.service;
 
-import com.cyepro.crudoperation.model.ClassSubjectAssignment; // Updated import
-import com.cyepro.crudoperation.model.Subject; // Updated import
-import com.cyepro.crudoperation.model.Teacher; // Updated import
-import com.cyepro.crudoperation.repository.ClassSubjectAssignmentRepository; // Updated import
-import com.cyepro.crudoperation.repository.SubjectRepository; // Updated import
-import com.cyepro.crudoperation.repository.TeacherRepository; // Updated import
+import com.cyepro.crudoperation.dto.ClassSubjectAssignmentDTO; // New import
+import com.cyepro.crudoperation.model.ClassSubjectAssignment;
+import com.cyepro.crudoperation.model.Subject;
+import com.cyepro.crudoperation.model.Teacher;
+import com.cyepro.crudoperation.repository.ClassSubjectAssignmentRepository;
+import com.cyepro.crudoperation.repository.SubjectRepository;
+import com.cyepro.crudoperation.repository.TeacherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors; // New import
 
 @Service
 public class ClassSubjectAssignmentService {
@@ -24,7 +26,7 @@ public class ClassSubjectAssignmentService {
     private SubjectRepository subjectRepository;
 
     @Transactional
-    public ClassSubjectAssignment createAssignment(Long teacherId, Long subjectId, String className, String academicYear) {
+    public ClassSubjectAssignmentDTO createAssignment(Long teacherId, Long subjectId, String className, String academicYear) {
         Teacher teacher = teacherRepository.findById(teacherId)
                 .orElseThrow(() -> new RuntimeException("Teacher not found with id: " + teacherId));
         Subject subject = subjectRepository.findById(subjectId)
@@ -39,19 +41,48 @@ public class ClassSubjectAssignmentService {
         assignment.setSubject(subject);
         assignment.setClassName(className);
         assignment.setAcademicYear(academicYear);
-        return assignmentRepository.save(assignment);
+        ClassSubjectAssignment savedAssignment = assignmentRepository.save(assignment);
+        // Convert to DTO before returning
+        return new ClassSubjectAssignmentDTO(
+                savedAssignment.getAssignmentId(),
+                savedAssignment.getTeacher().getTeacherId(),
+                savedAssignment.getTeacher().getTeacherName(),
+                savedAssignment.getSubject().getSubjectId(),
+                savedAssignment.getSubject().getSubjectName(),
+                savedAssignment.getClassName(),
+                savedAssignment.getAcademicYear()
+        );
     }
 
-    public List<ClassSubjectAssignment> getAllAssignments() {
-        return assignmentRepository.findAll();
+    public List<ClassSubjectAssignmentDTO> getAllAssignments() {
+        return assignmentRepository.findAll().stream()
+                .map(assignment -> new ClassSubjectAssignmentDTO(
+                        assignment.getAssignmentId(),
+                        assignment.getTeacher().getTeacherId(),
+                        assignment.getTeacher().getTeacherName(),
+                        assignment.getSubject().getSubjectId(),
+                        assignment.getSubject().getSubjectName(),
+                        assignment.getClassName(),
+                        assignment.getAcademicYear()
+                ))
+                .collect(Collectors.toList());
     }
 
-    public Optional<ClassSubjectAssignment> getAssignmentById(Long id) {
-        return assignmentRepository.findById(id);
+    public Optional<ClassSubjectAssignmentDTO> getAssignmentById(Long id) {
+        return assignmentRepository.findById(id)
+                .map(assignment -> new ClassSubjectAssignmentDTO(
+                        assignment.getAssignmentId(),
+                        assignment.getTeacher().getTeacherId(),
+                        assignment.getTeacher().getTeacherName(),
+                        assignment.getSubject().getSubjectId(),
+                        assignment.getSubject().getSubjectName(),
+                        assignment.getClassName(),
+                        assignment.getAcademicYear()
+                ));
     }
 
     @Transactional
-    public ClassSubjectAssignment updateAssignment(Long id, Long teacherId, Long subjectId, String className, String academicYear) {
+    public ClassSubjectAssignmentDTO updateAssignment(Long id, Long teacherId, Long subjectId, String className, String academicYear) {
         ClassSubjectAssignment existingAssignment = assignmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Class Subject Assignment not found with id: " + id));
 
@@ -70,7 +101,17 @@ public class ClassSubjectAssignmentService {
         existingAssignment.setSubject(subject);
         existingAssignment.setClassName(className);
         existingAssignment.setAcademicYear(academicYear);
-        return assignmentRepository.save(existingAssignment);
+        ClassSubjectAssignment updatedAssignment = assignmentRepository.save(existingAssignment);
+        // Convert to DTO before returning
+        return new ClassSubjectAssignmentDTO(
+                updatedAssignment.getAssignmentId(),
+                updatedAssignment.getTeacher().getTeacherId(),
+                updatedAssignment.getTeacher().getTeacherName(),
+                updatedAssignment.getSubject().getSubjectId(),
+                updatedAssignment.getSubject().getSubjectName(),
+                updatedAssignment.getClassName(),
+                updatedAssignment.getAcademicYear()
+        );
     }
 
     public void deleteAssignment(Long id) {
